@@ -23,7 +23,7 @@
             dataType: 'jsonp',
           }),
           $.ajax({
-            url: "http://api.atnd.org/events/?count=100&ym="+ym+"&start=1&format=jsonp",
+            url: "https://api.atnd.org/events/?count=100&ym="+ym+"&start=1&format=jsonp",
             dataType: 'jsonp',
           })
         )
@@ -62,11 +62,6 @@
             console.log('error');
         });
       
-
-        //console.log(events);
-
-        //callback(events);
-
 
 
         
