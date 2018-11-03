@@ -2,7 +2,7 @@
 
     var setCalendar = function(start, end,callback){
       var events = [];
-      var ym = start.add(1, 'days').format("YYYYMM"); 
+      var ym = start.add(7, 'days').format("YYYYMM"); 
       var item = sessionStorage.getItem('event' + ym);
       if (item) {
         events = JSON.parse(item);
@@ -19,7 +19,7 @@
           dataType: 'jsonp',
         })
       )
-      .done(function(data1, data2, data3) {
+      .done(function(data1, data2) {
 
         for (var i in data1[0].events) {
             events.push({
@@ -27,6 +27,7 @@
               start: moment(data1[0].events[i].started_at),
               end: moment(data1[0].events[i].ended_at),
               url: data1[0].events[i].event_url,
+              description: data1[0].events[i].catch,
               backgroundColor: '#a82400',
               borderColor: '#a82400'
             });
@@ -39,6 +40,7 @@
               start: moment(data2[0].events[i].event.started_at),
               end: moment(data2[0].events[i].event.ended_at),
               url: data2[0].events[i].event.event_url,
+              description: data2[0].events[i].event.description.split("。")[0].replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(1,100),
               backgroundColor: '#EBAC2B',
               borderColor: '#EBAC2B'
             });
@@ -63,18 +65,26 @@
         week : 'week',
         day  : 'day'
       },
-      axisFormat: 'H(:mm)',
-      timeFormat: 'H(:mm)',
+      axisFormat: 'HH:mm',
+      timeFormat: 'HH:mm',
       events    : function(start, end, timezone, callback) {
-
-        setCalendar(start, end,callback);
-
-        
+        setCalendar(start, end, callback);        
       },
       editable  : true,
       eventLimit: false,
       selectable:true,
       selectHelper:true,
+      eventRender: function(eventObj, $el) {
+        var content = eventObj.description || '';
+        $el.popover({
+          title: eventObj.title,
+          content: content,
+          trigger: 'hover',
+          html: true,
+          placement: 'top',
+          container: 'body'
+        });
+      },
       eventClick: function(calEvent, jsEvent, view) {
       },
       dayClick: function(date, jsEvent, view) {
