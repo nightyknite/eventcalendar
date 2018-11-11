@@ -32,6 +32,15 @@
               end: moment(data1[0].events[i].ended_at),
               url: data1[0].events[i].event_url,
               description: data1[0].events[i].catch,
+              description: ""
+                           + "day:" + moment(data1[0].events[i].started_at).format("MM/DD HH:mm") + " - "
+                           + "" + moment(data1[0].events[i].ended_at).format("MM/DD HH:mm") + "<br>"
+                           + "limit:" + data1[0].events[i].limit + "<br>"
+                           + "place:" + data1[0].events[i].place + "<br>"
+                           + "address:" + data1[0].events[i].address + "<br>"
+                           + "description:" + data1[0].events[i].catch.substring(0,49) + "<br>"
+                           + "",
+
               backgroundColor: '#a82400',
               borderColor: '#a82400'
             });
@@ -44,7 +53,14 @@
               start: moment(data2[0].events[i].event.started_at),
               end: moment(data2[0].events[i].event.ended_at),
               url: data2[0].events[i].event.event_url,
-              description: data2[0].events[i].event.description.split("。")[0].replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(1,100),
+              description: ""
+                           + "day:" + moment(data2[0].events[i].event.started_at).format("MM/DD HH:mm") + " - "
+                           + "" + moment(data2[0].events[i].event.ended_at).format("MM/DD HH:mm") + "<br>"
+                           + "limit:" + data2[0].events[i].event.limit + "<br>"
+                           + "place:" + data2[0].events[i].event.place + "<br>"
+                           + "address:" + data2[0].events[i].event.address + "<br>"
+                           + "description:" + data2[0].events[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
+                           + "",
               backgroundColor: '#EBAC2B',
               borderColor: '#EBAC2B'
             });
@@ -57,11 +73,12 @@
               end: moment(data3[0][i].event.ends_at),
               url: data3[0][i].event.public_url,
               description: ""
-                           + "start:" + moment(data3[0][i].event.starts_at).format("MM/DD HH:mm") + "<br>"
-                           + "end :" + moment(data3[0][i].event.ends_at).format("MM/DD HH:mm") + "<br>"
-                           + "limits:" + data3[0][i].event.ticket_limit + "<br>"
-                           + "venue_name:" + data3[0][i].event.venue_name + "<br>"
+                           + "day:" + moment(data3[0][i].event.starts_at).format("MM/DD HH:mm") + " - "
+                           + "" + moment(data3[0][i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                           + "limit:" + data3[0][i].event.ticket_limit + "<br>"
+                           + "place:" + data3[0][i].event.venue_name + "<br>"
                            + "address:" + data3[0][i].event.address + "<br>"
+                           + "description:" + data3[0][i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
                            + "",
               backgroundColor: '#34bde9',
               borderColor: '#34bde9'
