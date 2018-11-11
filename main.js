@@ -17,9 +17,13 @@
         $.ajax({
           url: "https://api.atnd.org/events/?count=100&ym="+ym+"&start=1&format=jsonp",
           dataType: 'jsonp',
+        }),
+        $.ajax({
+          url: "https://itev.herokuapp.com/?ym="+ym+"&format=json",
+          dataType: 'json',
         })
       )
-      .done(function(data1, data2) {
+      .done(function(data1, data2 ,data3) {
 
         for (var i in data1[0].events) {
             events.push({
@@ -45,11 +49,31 @@
               borderColor: '#EBAC2B'
             });
           }
+          
+          for (var i in data3[0]) {
+            events.push({
+              title: data3[0][i].event.title,
+              start: moment(data3[0][i].event.starts_at),
+              end: moment(data3[0][i].event.ends_at),
+              url: data3[0][i].event.public_url,
+              description: ""
+                           + "start:" + moment(data3[0][i].event.starts_at).format("MM/DD HH:mm") + "<br>"
+                           + "end :" + moment(data3[0][i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                           + "limits:" + data3[0][i].event.ticket_limit + "<br>"
+                           + "venue_name:" + data3[0][i].event.venue_name + "<br>"
+                           + "address:" + data3[0][i].event.address + "<br>"
+                           + "",
+              backgroundColor: '#34bde9',
+              borderColor: '#34bde9'
+            });
+          }
+
           sessionStorage.setItem('event'+ym, JSON.stringify(events));
           callback(events);
       })
-      .fail(function() {
-          console.log('error');
+      .fail(function(a,b) {
+          console.log(a);
+          console.log(b);
       });
     }
 
