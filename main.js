@@ -19,7 +19,7 @@
           dataType: 'jsonp',
         })
       )
-      .done(function(data1, data2 ,data3) {
+      .done(function(data1, data2) {
 
         for (var i in data1[0].events) {
             events.push({
@@ -59,25 +59,6 @@
                            + "",
               backgroundColor: '#EBAC2B',
               borderColor: '#EBAC2B'
-            });
-          }
-          
-          for (var i in data3[0]) {
-            events.push({
-              title: data3[0][i].event.title,
-              start: moment(data3[0][i].event.starts_at),
-              end: moment(data3[0][i].event.ends_at),
-              url: data3[0][i].event.public_url,
-              description: ""
-                           + "day:" + moment(data3[0][i].event.starts_at).format("MM/DD HH:mm") + " - "
-                           + "" + moment(data3[0][i].event.ends_at).format("MM/DD HH:mm") + "<br>"
-                           + "limit:" + data3[0][i].event.ticket_limit + "<br>"
-                           + "place:" + data3[0][i].event.venue_name + "<br>"
-                           + "address:" + data3[0][i].event.address + "<br>"
-                           + "description:" + data3[0][i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
-                           + "",
-              backgroundColor: '#34bde9',
-              borderColor: '#34bde9'
             });
           }
 
