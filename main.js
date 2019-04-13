@@ -17,10 +17,6 @@
         $.ajax({
           url: "https://api.atnd.org/events/?count=100&ym="+ym+"&start=1&format=jsonp",
           dataType: 'jsonp',
-        }),
-        $.ajax({
-          url: "https://itev.herokuapp.com/?ym="+ym+"&format=json",
-          dataType: 'json',
         })
       )
       .done(function(data1, data2 ,data3) {
