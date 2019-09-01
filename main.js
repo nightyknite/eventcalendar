@@ -1,74 +1,81 @@
-  $(function () {
-
-    var setCalendar = function(start, end,callback){
-      var events = [];
-      var ym = start.add(7, 'days').format("YYYYMM"); 
-      var item = sessionStorage.getItem('event' + ym);
+document.addEventListener("DOMContentLoaded", function(){
+    
+    const setCalendar = (start, end, callback) => {
+      let events = [];
+      const ym = start.add(7, 'days').format("YYYYMM"); 
+      const item = sessionStorage.getItem('event' + ym);
       if (item) {
         events = JSON.parse(item);
         callback(events);
         return;
       }
-      $.when(
-        $.ajax({
-          url: "https://connpass.com/api/v1/event/?count=100&ym="+ym+"",
-          dataType: 'jsonp',
-        }),
-        $.ajax({
-          url: "https://api.atnd.org/events/?count=100&ym="+ym+"&start=1&format=jsonp",
-          dataType: 'jsonp',
-        })
-      )
-      .done(function(data1, data2) {
+      const connpass = data => {
+        let event = [];
+        for (var i in data.events) {
+          event.push({
+            title: data.events[i].title,
+            start: moment(data.events[i].started_at),
+            end: moment(data.events[i].ended_at),
+            url: data.events.event_url,
+            description: ""
+                         + "day:" + moment(data.events[i].started_at).format("MM/DD HH:mm") + " - "
+                         + "" + moment(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
+                         + "limit:" + data.events[i].limit + "<br>"
+                         + "place:" + data.events[i].place + "<br>"
+                         + "address:" + data.events[i].address + "<br>"
+                         + "description:" + data.events[i].catch.substring(0,49) + "<br>"
+                         + "",
 
-        for (var i in data1[0].events) {
-            events.push({
-              title: data1[0].events[i].title,
-              start: moment(data1[0].events[i].started_at),
-              end: moment(data1[0].events[i].ended_at),
-              url: data1[0].events[i].event_url,
-              description: data1[0].events[i].catch,
-              description: ""
-                           + "day:" + moment(data1[0].events[i].started_at).format("MM/DD HH:mm") + " - "
-                           + "" + moment(data1[0].events[i].ended_at).format("MM/DD HH:mm") + "<br>"
-                           + "limit:" + data1[0].events[i].limit + "<br>"
-                           + "place:" + data1[0].events[i].place + "<br>"
-                           + "address:" + data1[0].events[i].address + "<br>"
-                           + "description:" + data1[0].events[i].catch.substring(0,49) + "<br>"
-                           + "",
+            backgroundColor: '#a82400',
+            borderColor: '#a82400',
+            textColor: 'white'
+          });
+        }
+        return event;
+      }
 
-              backgroundColor: '#a82400',
-              borderColor: '#a82400'
-            });
-          
-          }
+      const atnd = data => {
+        let event = [];
+        for (var i in data.events) {
+          event.push({
+            title: data.events[i].event.title,
+            start: moment(data.events[i].event.started_at),
+            end: moment(data.events[i].event.ended_at),
+            url: data.events[i].event.event_url,
+            description: ""
+                         + "day:" + moment(data.events[i].event.started_at).format("MM/DD HH:mm") + " - "
+                         + "" + moment(data.events[i].event.ended_at).format("MM/DD HH:mm") + "<br>"
+                         + "limit:" + data.events[i].event.limit + "<br>"
+                         + "place:" + data.events[i].event.place + "<br>"
+                         + "address:" + data.events[i].event.address + "<br>"
+                         + "description:" + data.events[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
+                         + "",
+            backgroundColor: '#EBAC2B',
+            borderColor: '#EBAC2B',
+            textColor: 'white'
+          });
+        }
+        return event;
+      }
 
-          for (var i in data2[0].events) {
-            events.push({
-              title: data2[0].events[i].event.title,
-              start: moment(data2[0].events[i].event.started_at),
-              end: moment(data2[0].events[i].event.ended_at),
-              url: data2[0].events[i].event.event_url,
-              description: ""
-                           + "day:" + moment(data2[0].events[i].event.started_at).format("MM/DD HH:mm") + " - "
-                           + "" + moment(data2[0].events[i].event.ended_at).format("MM/DD HH:mm") + "<br>"
-                           + "limit:" + data2[0].events[i].event.limit + "<br>"
-                           + "place:" + data2[0].events[i].event.place + "<br>"
-                           + "address:" + data2[0].events[i].event.address + "<br>"
-                           + "description:" + data2[0].events[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
-                           + "",
-              backgroundColor: '#EBAC2B',
-              borderColor: '#EBAC2B'
-            });
-          }
+      (async () => {
+        let data = [];
+        let event = [];
+        for (let i = 0; i < 10; i++) {
+            data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
+            event = connpass(data);
+            events = events.concat(event);
+        }
+        
+        data = await $.ajax({url: 'https://api.atnd.org/events/?count=100&ym=' + ym + '&start=1&format=jsonp', dataType: 'jsonp'});          
+        event = atnd(data);
+        events = events.concat(event);
+         
+        sessionStorage.setItem('event' + ym, JSON.stringify(events));
+        console.log(events);
+        callback(events);
+      })();
 
-          sessionStorage.setItem('event'+ym, JSON.stringify(events));
-          callback(events);
-      })
-      .fail(function(a,b) {
-          console.log(a);
-          console.log(b);
-      });
     }
 
     $('#calendar').fullCalendar({
@@ -102,11 +109,7 @@
           placement: 'top',
           container: 'body'
         });
-      },
-      eventClick: function(calEvent, jsEvent, view) {
-      },
-      dayClick: function(date, jsEvent, view) {
       }
     });
     
-  });
+}, false);
