@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function(){
             title: data.events[i].title,
             start: moment(data.events[i].started_at),
             end: moment(data.events[i].ended_at),
-            url: data.events.event_url,
+            url: data.events[i].event_url,
             description: ""
                          + "day:" + moment(data.events[i].started_at).format("MM/DD HH:mm") + " - "
                          + "" + moment(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
