@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function(){
             title: data.events[i].title,
             start: data.events[i].started_at,
             end: data.events[i].ended_at,
-            url: data.events.event_url,
+            url: data.events[i].event_url,
             description: ""
                          + "day:" + moment(data.events[i].started_at).format("MM/DD HH:mm") + " - "
                          + "" + moment(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function(){
       header    : {
         left  : 'prev,next today',
         center: 'title',
-        right : 'month,agendaWeek,agendaDay'
+        right : 'month,listWeek,listDay'
       },
       buttonText: {
         today: 'today',
