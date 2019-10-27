@@ -2,13 +2,15 @@ document.addEventListener("DOMContentLoaded", function(){
     
     const setCalendar = (start, end, callback) => {
       let events = [];
-      const ym = start.add(7, 'days').format("YYYYMM"); 
+      const ym = start.add(7, 'days').format("YYYYMM");
       const item = sessionStorage.getItem('event' + ym);
+      
       if (item) {
         events = JSON.parse(item);
         callback(events);
         return;
       }
+      
       const connpass = data => {
         let event = [];
         for (var i in data.events) {
@@ -58,13 +60,39 @@ document.addEventListener("DOMContentLoaded", function(){
         return event;
       }
 
+
+      const doorkeeper = data => {
+        let event = [];
+        for (let i in data) {
+          event.push({
+            title: data[i].event.title,
+            start: data[i].event.starts_at,
+            end: data[i].event.ends_at,
+            url: data[i].event.public_url,
+            description: ""
+                         + "day:" + moment(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
+                         + "" + moment(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                         + "limit:" + data[i].event.ticket_limit + "<br>"
+                         + "place:" + data[i].event.venue_name + "<br>"
+                         + "address:" + data[i].event.address + "<br>"
+                         + "description:" + data[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
+                         + "",
+            backgroundColor: '#0F4FF4',
+            borderColor: '#EBAC2B',
+            textColor: 'white'
+          });
+        }
+        return event;
+      }
+
       (async () => {
         let data = [];
         let event = [];
         const progress = document.getElementById('eventloading');
+        progress.max = 15;
         progress.style.display = 'block';
         progress.value = 0;
-          
+        
         for (let i = 0; i < 10; i++) {
           data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
           event = connpass(data);
@@ -78,9 +106,22 @@ document.addEventListener("DOMContentLoaded", function(){
           events = events.concat(event);
           progress.value = progress.value + 1;
         }
+        
+
+        let doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
+        if (doorkeeperToken !== null) {
+          for (let i = 1; i < 20; i++) {
+            data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + moment(start).add(7, 'days').startOf('month').toISOString() + '&until=' + moment(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
+            event = doorkeeper(data);
+            events = events.concat(event);
+            progress.value = progress.value + 1;
+          }
+        }
+        
         sessionStorage.setItem('event' + ym, JSON.stringify(events));
         progress.style.display = 'none';
         callback(events);
+
       })();
 
     }
