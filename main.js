@@ -88,35 +88,44 @@ document.addEventListener("DOMContentLoaded", function(){
       (async () => {
         let data = [];
         let event = [];
+        const results = [];
+
         const progress = document.getElementById('eventloading');
         progress.max = 15;
         progress.style.display = 'block';
         progress.value = 0;
         
-        for (let i = 0; i < 10; i++) {
-          data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
-          event = connpass(data);
-          events = events.concat(event);
-          progress.value = progress.value + 1;
-        }
-        
-        for (let i = 0; i < 4; i++) {
-          data = await $.ajax({url: 'https://api.atnd.org/events/?count=100&ym=' + ym + '&start='+ (i * 100 + 1) + '&format=jsonp', dataType: 'jsonp'});          
-          event = atnd(data);
-          events = events.concat(event);
-          progress.value = progress.value + 1;
-        }
-        
-
-        let doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
-        if (doorkeeperToken !== null) {
-          for (let i = 1; i < 20; i++) {
-            data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + moment(start).add(7, 'days').startOf('month').toISOString() + '&until=' + moment(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
-            event = doorkeeper(data);
+        results.push((async () => {
+          for (let i = 0; i < 10; i++) {
+            data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
+            event = connpass(data);
             events = events.concat(event);
             progress.value = progress.value + 1;
           }
-        }
+        })());
+
+        results.push((async () => {
+          for (let i = 0; i < 4; i++) {
+            data = await $.ajax({url: 'https://api.atnd.org/events/?count=100&ym=' + ym + '&start='+ (i * 100 + 1) + '&format=jsonp', dataType: 'jsonp'});          
+            event = atnd(data);
+            events = events.concat(event);
+            progress.value = progress.value + 1;
+          }
+        })());
+        
+        results.push((async () => {
+          let doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
+          if (doorkeeperToken !== null) {
+            for (let i = 1; i < 20; i++) {
+              data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + moment(start).add(7, 'days').startOf('month').toISOString() + '&until=' + moment(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
+              event = doorkeeper(data);
+              events = events.concat(event);
+              progress.value = progress.value + 1;
+            }
+          }
+        })());
+
+        await Promise.all(results);
         
         sessionStorage.setItem('event' + ym, JSON.stringify(events));
         progress.style.display = 'none';
