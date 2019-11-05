@@ -2,10 +2,13 @@ document.addEventListener("DOMContentLoaded", function(){
     
     const setCalendar = (start, end, callback) => {
       let events = [];
-      const ym = start.add(7, 'days').format("YYYYMM");
+      let dt = new Date(start);
+      dt.setDate(dt.getDate() + 7);
+
+      const ym = dt.getFullYear() + ("00" + (dt.getMonth()+1)).slice(-2);
       const item = sessionStorage.getItem('event' + ym);
       
-      if (item) {
+      if (item !== null) {
         events = JSON.parse(item);
         callback(events);
         return;
@@ -135,33 +138,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
     }
 
-    $('#calendar').fullCalendar({
-      header    : {
-        left  : 'prev,next today',
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      plugins: [ 'dayGrid', 'timeGrid', 'list' ],
+      defaultView: 'dayGridMonth',
+      views: {
+        listDay: { buttonText: '日' },
+        listWeek: { buttonText: '週' }
+      },
+      header: {
+        left: 'prev,next today',
         center: 'title',
-        right : 'month,listWeek,listDay'
+        right: 'dayGridMonth,listWeek,listDay'
       },
-      buttonText: {
-        today: 'today',
-        month: 'month',
-        week : 'week',
-        day  : 'day'
-      },
-      axisFormat: 'HH:mm',
-      timeFormat: 'HH:mm',
-      timezone: 'local',
-      events    : function(start, end, timezone, callback) {
-        setCalendar(start, end, callback);        
-      },
-      editable  : true,
-      eventLimit: false,
-      selectable:true,
-      selectHelper:true,
-      eventRender: function(eventObj, $el) {
-        var content = eventObj.description || '';
-        $el.popover({
-          title: eventObj.title,
-          content: content,
+      locale: 'ja',
+      events: (info, successCallback, failureCallback) => setCalendar(info.startStr, info.endStr, successCallback),
+      eventRender: (info) => {
+        $(info.el).popover({
+          title: info.event.title,
+          content: info.event.extendedProps.description,
           trigger: 'hover',
           html: true,
           placement: 'top',
@@ -169,6 +164,8 @@ document.addEventListener("DOMContentLoaded", function(){
         });
       }
     });
+
+    calendar.render();
     
-}, false);
+});
 
