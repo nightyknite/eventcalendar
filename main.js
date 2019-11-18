@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function(){
     const setCalendar = (start, end, callback) => {
       let events = [];
       let dt = new Date(start);
+      
       dt.setDate(dt.getDate() + 7);
 
       const ym = dt.getFullYear() + ("00" + (dt.getMonth()+1)).slice(-2);
@@ -10,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function(){
       
       if (item !== null) {
         events = JSON.parse(item);
+
+        const keyword = document.getElementById("keyword");
+        if ((keyword !== null) && (keyword.value.length > 0)) {
+          events = events.filter(event => {return (event.description.indexOf(keyword.value) > 0);});
+        }
         callback(events);
         return;
       }
@@ -140,7 +146,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
-      plugins: [ 'dayGrid', 'timeGrid', 'list' ],
+      plugins: [ 'dayGrid', 'list' ],
       defaultView: 'dayGridMonth',
       views: {
         listDay: { buttonText: '日' },
@@ -162,10 +168,21 @@ document.addEventListener("DOMContentLoaded", function(){
           placement: 'top',
           container: 'body'
         });
+      },
+      eventClick: function(info) {
+        info.jsEvent.preventDefault();
+        if (info.event.url) {
+          window.open(info.event.url);
+        }
       }
     });
 
     calendar.render();
+
+    document.getElementById("search").addEventListener('click', ()=> {
+      calendar.refetchEvents();
+      calendar.render();
+    });
     
 });
 
