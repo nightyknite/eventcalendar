@@ -11,9 +11,16 @@ document.addEventListener("DOMContentLoaded", function(){
       
       if (item !== null) {
         events = JSON.parse(item);
-
+        const start = document.getElementById("start");
+        if (start.value.length > 0) {
+          events = events.filter(event => {return (moment(event.start).format("HH:mm") >= start.value);});
+        }
+        const limit = document.getElementById("limit");
+        if (limit.value.length > 0) {
+          events = events.filter(event => {return (Number(event.limit) >= limit.value);});
+        }
         const keyword = document.getElementById("keyword");
-        if ((keyword !== null) && (keyword.value.length > 0)) {
+        if (keyword.value.length > 0) {
           events = events.filter(event => {return (event.description.indexOf(keyword.value) > 0);});
         }
         callback(events);
@@ -28,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function(){
             start: data.events[i].started_at,
             end: data.events[i].ended_at,
             url: data.events[i].event_url,
+            limit: data.events[i].limit,
             description: ""
                          + "day:" + moment(data.events[i].started_at).format("MM/DD HH:mm") + " - "
                          + "" + moment(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
@@ -53,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function(){
             start: data.events[i].event.started_at,
             end: data.events[i].event.ended_at,
             url: data.events[i].event.event_url,
+            limit: data.events[i].event.limit,
             description: ""
                          + "day:" + moment(data.events[i].event.started_at).format("MM/DD HH:mm") + " - "
                          + "" + moment(data.events[i].event.ended_at).format("MM/DD HH:mm") + "<br>"
@@ -61,8 +70,8 @@ document.addEventListener("DOMContentLoaded", function(){
                          + "address:" + data.events[i].event.address + "<br>"
                          + "description:" + data.events[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
                          + "",
-            backgroundColor: '#EBAC2B',
-            borderColor: '#EBAC2B',
+            backgroundColor: '#ebac2b',
+            borderColor: '#ebac2b',
             textColor: 'white'
           });
         }
@@ -78,6 +87,7 @@ document.addEventListener("DOMContentLoaded", function(){
             start: data[i].event.starts_at,
             end: data[i].event.ends_at,
             url: data[i].event.public_url,
+            limit: data[i].event.ticket_limit,
             description: ""
                          + "day:" + moment(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
                          + "" + moment(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
@@ -86,8 +96,8 @@ document.addEventListener("DOMContentLoaded", function(){
                          + "address:" + data[i].event.address + "<br>"
                          + "description:" + data[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
                          + "",
-            backgroundColor: '#0F4FF4',
-            borderColor: '#EBAC2B',
+            backgroundColor: '#0f4ff4',
+            borderColor: '#0f4ff4',
             textColor: 'white'
           });
         }
@@ -99,45 +109,48 @@ document.addEventListener("DOMContentLoaded", function(){
         let event = [];
         const results = [];
 
-        const progress = document.getElementById('eventloading');
-        progress.max = 15;
-        progress.style.display = 'block';
-        progress.value = 0;
-        
+        const doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
+        const conpassTimes = 10;
+        const atndTimes = 4;
+        const doorkeeperTimes = 19;
+        const totalTimes = conpassTimes + atndTimes + (doorkeeperToken ? doorkeeperTimes : 0);
+        const progressArea = document.querySelector("#eventloading");
+        progressArea.max = totalTimes;
+        progressArea.style.display = 'block';
+        progressArea.value = 0;
+
         results.push((async () => {
-          for (let i = 0; i < 10; i++) {
+          for (let i = 0; i < conpassTimes; i++) {
             data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
             event = connpass(data);
             events = events.concat(event);
-            progress.value = progress.value + 1;
+            progressArea.value += 1;
           }
         })());
 
         results.push((async () => {
-          for (let i = 0; i < 4; i++) {
+          for (let i = 0; i < atndTimes; i++) {
             data = await $.ajax({url: 'https://api.atnd.org/events/?count=100&ym=' + ym + '&start='+ (i * 100 + 1) + '&format=jsonp', dataType: 'jsonp'});          
             event = atnd(data);
             events = events.concat(event);
-            progress.value = progress.value + 1;
+            progressArea.value += 1;
           }
         })());
         
         results.push((async () => {
-          let doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
           if (doorkeeperToken !== null) {
-            for (let i = 1; i < 20; i++) {
+            for (let i = 1; i < (doorkeeperTimes + 1); i++) {
               data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + moment(start).add(7, 'days').startOf('month').toISOString() + '&until=' + moment(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
               event = doorkeeper(data);
               events = events.concat(event);
-              progress.value = progress.value + 1;
+              progressArea.value += 1;
             }
           }
         })());
 
         await Promise.all(results);
-        
+        progressArea.style.display = "none";
         sessionStorage.setItem('event' + ym, JSON.stringify(events));
-        progress.style.display = 'none';
         callback(events);
 
       })();
