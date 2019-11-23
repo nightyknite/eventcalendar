@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function(){
                          + "limit:" + data.events[i].limit + "<br>"
                          + "place:" + data.events[i].place + "<br>"
                          + "address:" + data.events[i].address + "<br>"
-                         + "description:" + data.events[i].catch.substring(0,49) + "<br>"
+                         + "description:" + (data.events[i].catch ? data.events[i].catch.substring(0,49) : "") + "<br>"
                          + "",
 
             backgroundColor: '#a82400',
@@ -104,16 +104,45 @@ document.addEventListener("DOMContentLoaded", function(){
         return event;
       }
 
+      const original = data => {
+        let event = [];
+        for (let i in data) {
+          event.push({
+            title: data[i].event.title,
+            start: data[i].event.starts_at,
+            end: data[i].event.ends_at,
+            url: data[i].event.public_url,
+            limit: data[i].event.ticket_limit,
+            description: ""
+                         + "day:" + moment(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
+                         + "" + moment(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                         + "limit:" + data[i].event.ticket_limit + "<br>"
+                         + "place:" + data[i].event.venue_name + "<br>"
+                         + "address:" + data[i].event.address + "<br>"
+                         + "description:" + data[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
+                         + "",
+            backgroundColor: '#006666',
+            borderColor: '#006666',
+            textColor: 'white'
+          });
+        }
+        return event;
+      }
+
       (async () => {
         let data = [];
         let event = [];
         const results = [];
 
         const doorkeeperToken = sessionStorage.getItem('doorkeeperToken') || localStorage.getItem('doorkeeperToken');
+        const originalUrl = sessionStorage.getItem('originalUrl') || localStorage.getItem('originalUrl');
+
         const conpassTimes = 10;
         const atndTimes = 4;
         const doorkeeperTimes = 19;
-        const totalTimes = conpassTimes + atndTimes + (doorkeeperToken ? doorkeeperTimes : 0);
+        const originalTimes = 1;
+
+        const totalTimes = conpassTimes + atndTimes + (doorkeeperToken ? doorkeeperTimes : 0) + (originalUrl ? originalTimes : 0) ;
         const progressArea = document.querySelector("#eventloading");
         progressArea.max = totalTimes;
         progressArea.style.display = 'block';
@@ -136,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function(){
             progressArea.value += 1;
           }
         })());
-        
+
         results.push((async () => {
           if (doorkeeperToken !== null) {
             for (let i = 1; i < (doorkeeperTimes + 1); i++) {
@@ -147,6 +176,16 @@ document.addEventListener("DOMContentLoaded", function(){
             }
           }
         })());
+
+       results.push((async () => {
+          if (originalUrl !== null) {
+            data = await $.ajax({url: originalUrl.replace('{{ym}}', ym), dataType: 'json'});     
+            event = original(data);
+            events = events.concat(event);
+            progressArea.value += 1;
+          }
+        })());
+       
 
         await Promise.all(results);
         progressArea.style.display = "none";
