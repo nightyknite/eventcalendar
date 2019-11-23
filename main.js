@@ -179,10 +179,14 @@ document.addEventListener("DOMContentLoaded", function(){
 
        results.push((async () => {
           if (originalUrl !== null) {
-            data = await $.ajax({url: originalUrl.replace('{{ym}}', ym), dataType: 'json'});     
-            event = original(data);
-            events = events.concat(event);
-            progressArea.value += 1;
+            try {
+              data = await $.ajax({url: originalUrl.replace('{{ym}}', ym), dataType: 'json'});     
+              event = original(data);
+              events = events.concat(event);
+              progressArea.value += 1;
+            } catch (error) {
+              console.log(error);
+            }
           }
         })());
        
