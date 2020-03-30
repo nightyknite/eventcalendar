@@ -53,32 +53,6 @@ document.addEventListener("DOMContentLoaded", function(){
         return event;
       }
 
-      const atnd = data => {
-        let event = [];
-        for (var i in data.events) {
-          event.push({
-            title: data.events[i].event.title,
-            start: data.events[i].event.started_at,
-            end: data.events[i].event.ended_at,
-            url: data.events[i].event.event_url,
-            limit: data.events[i].event.limit,
-            description: ""
-                         + "day:" + moment(data.events[i].event.started_at).format("MM/DD HH:mm") + " - "
-                         + "" + moment(data.events[i].event.ended_at).format("MM/DD HH:mm") + "<br>"
-                         + "limit:" + data.events[i].event.limit + "<br>"
-                         + "place:" + data.events[i].event.place + "<br>"
-                         + "address:" + data.events[i].event.address + "<br>"
-                         + "description:" + data.events[i].event.description.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'').substring(0,49) + "<br>"
-                         + "",
-            backgroundColor: '#ebac2b',
-            borderColor: '#ebac2b',
-            textColor: 'white'
-          });
-        }
-        return event;
-      }
-
-
       const doorkeeper = data => {
         let event = [];
         for (let i in data) {
@@ -138,11 +112,10 @@ document.addEventListener("DOMContentLoaded", function(){
         const originalUrl = sessionStorage.getItem('originalUrl') || localStorage.getItem('originalUrl');
 
         const conpassTimes = 10;
-        const atndTimes = 4;
         const doorkeeperTimes = 19;
         const originalTimes = 1;
 
-        const totalTimes = conpassTimes + atndTimes + (doorkeeperToken ? doorkeeperTimes : 0) + (originalUrl ? originalTimes : 0) ;
+        const totalTimes = conpassTimes + (doorkeeperToken ? doorkeeperTimes : 0) + (originalUrl ? originalTimes : 0) ;
         const progressArea = document.querySelector("#eventloading");
         progressArea.max = totalTimes;
         progressArea.style.display = 'block';
@@ -152,15 +125,6 @@ document.addEventListener("DOMContentLoaded", function(){
           for (let i = 0; i < conpassTimes; i++) {
             data = await $.ajax({url: 'https://connpass.com/api/v1/event/?count=100&ym=' + ym + '&start=' + (i * 100 + 1), dataType: 'jsonp'});
             event = connpass(data);
-            events = events.concat(event);
-            progressArea.value += 1;
-          }
-        })());
-
-        results.push((async () => {
-          for (let i = 0; i < atndTimes; i++) {
-            data = await $.ajax({url: 'https://api.atnd.org/events/?count=100&ym=' + ym + '&start='+ (i * 100 + 1) + '&format=jsonp', dataType: 'jsonp'});          
-            event = atnd(data);
             events = events.concat(event);
             progressArea.value += 1;
           }
