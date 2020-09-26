@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function(){
         events = JSON.parse(item);
         const start = document.getElementById("start");
         if (start.value.length > 0) {
-          events = events.filter(event => {return (moment(event.start).format("HH:mm") >= start.value);});
+          events = events.filter(event => {return (dayjs(event.start).format("HH:mm") >= start.value);});
         }
         const limit = document.getElementById("limit");
         if (limit.value.length > 0) {
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", function(){
             url: data.events[i].event_url,
             limit: data.events[i].limit,
             description: ""
-                         + "day:" + moment(data.events[i].started_at).format("MM/DD HH:mm") + " - "
-                         + "" + moment(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
+                         + "day:" + dayjs(data.events[i].started_at).format("MM/DD HH:mm") + " - "
+                         + "" + dayjs(data.events[i].ended_at).format("MM/DD HH:mm") + "<br>"
                          + "limit:" + data.events[i].limit + "<br>"
                          + "place:" + data.events[i].place + "<br>"
                          + "address:" + data.events[i].address + "<br>"
@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function(){
             url: data[i].event.public_url,
             limit: data[i].event.ticket_limit,
             description: ""
-                         + "day:" + moment(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
-                         + "" + moment(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                         + "day:" + dayjs(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
+                         + "" + dayjs(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
                          + "limit:" + data[i].event.ticket_limit + "<br>"
                          + "place:" + data[i].event.venue_name + "<br>"
                          + "address:" + data[i].event.address + "<br>"
@@ -88,8 +88,8 @@ document.addEventListener("DOMContentLoaded", function(){
             url: data[i].event.public_url,
             limit: data[i].event.ticket_limit,
             description: ""
-                         + "day:" + moment(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
-                         + "" + moment(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
+                         + "day:" + dayjs(data[i].event.starts_at).format("MM/DD HH:mm") + " - "
+                         + "" + dayjs(data[i].event.ends_at).format("MM/DD HH:mm") + "<br>"
                          + "limit:" + data[i].event.ticket_limit + "<br>"
                          + "place:" + data[i].event.venue_name + "<br>"
                          + "address:" + data[i].event.address + "<br>"
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function(){
         results.push((async () => {
           if (doorkeeperToken !== null) {
             for (let i = 1; i < (doorkeeperTimes + 1); i++) {
-              data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + moment(start).add(7, 'days').startOf('month').toISOString() + '&until=' + moment(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
+              data = await $.ajax({url: 'https://api.doorkeeper.jp/events?since=' + dayjs(start).add(7, 'days').startOf('month').toISOString() + '&until=' + dayjs(start).add(7, 'days').endOf('month').toISOString() + '&sort=starts_at&page=' + i, dataType: 'jsonp', headers: { 'Authorization': 'Bearer ' +  doorkeeperToken} });     
               event = doorkeeper(data);
               events = events.concat(event);
               progressArea.value += 1;
