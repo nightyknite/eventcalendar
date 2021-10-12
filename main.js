@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function(){
         let event = [];
         for (var i in data.events) {
           event.push({
-            title: data.events[i].title,
+            title: data.events[i].title　+ '(' + data.events[i].limit + ')',
             start: data.events[i].started_at,
             end: data.events[i].ended_at,
             url: data.events[i].event_url,
